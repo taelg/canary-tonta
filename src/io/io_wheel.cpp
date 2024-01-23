@@ -17,10 +17,6 @@
 
 #include "utils/tools.hpp"
 
-#define MITIGATION_INCREASE 0.03
-#define MANA_LEECH_INCREASE 0.25
-#define HEALTH_LEECH_INCREASE 0.75
-
 /**
  * @brief This namespace groups together variables, functions, and class definitions within a specific scope.
  * @brief Utilizing namespaces in C++ is a strategic approach to mitigate the need for file inclusions in header files (.hpp).
@@ -336,9 +332,9 @@ void IOWheel::addSpell(const std::shared_ptr<Player> &player, PlayerWheelMethods
 	}
 }
 
-void IOWheel::addVesselResonance(const std::shared_ptr<Player> &player, PlayerWheelMethodsBonusData &bonusData, WheelSlots_t slotType, WheelGemAffinity_t affinity, uint16_t points) const {
+void IOWheel::increaseResistance(const std::shared_ptr<Player> &player, PlayerWheelMethodsBonusData &bonusData, WheelSlots_t slotType, uint16_t points, CombatType_t combat, int16_t value) const {
 	if (isMaxPointAddedToSlot(player, points, slotType)) {
-		bonusData.unlockedVesselResonances[static_cast<uint8_t>(affinity)]++;
+		bonusData.resistance[combatTypeToIndex(combat)] += value;
 	}
 }
 
@@ -415,10 +411,8 @@ void IOWheel::slotGreen200(const std::shared_ptr<Player> &player, uint16_t point
 
 // SLOT_GREEN_TOP_150 = 2
 void IOWheel::slotGreenTop150(const std::shared_ptr<Player> &player, uint16_t points, uint8_t, PlayerWheelMethodsBonusData &bonusData) const {
-	bonusData.mitigation += MITIGATION_INCREASE * points;
-	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_GREEN_BOTTOM_150)) {
-		bonusData.leech.manaLeech += MANA_LEECH_INCREASE;
-	}
+	bonusData.mitigation += 0.03 * points;
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_GREEN_TOP_150, points, COMBAT_ICEDAMAGE, 200);
 }
 
 // SLOT_GREEN_TOP_100 = 3
@@ -430,7 +424,9 @@ void IOWheel::slotGreenTop100(const std::shared_ptr<Player> &player, uint16_t po
 	} else {
 		bonusData.stats.health += 1 * points;
 	}
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_GREEN_TOP_100, WheelGemAffinity_t::Green, points);
+	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_GREEN_TOP_100)) {
+		bonusData.leech.lifeLeech += 0.75;
+	}
 }
 
 // SLOT_RED_TOP_100 = 4
@@ -463,7 +459,10 @@ void IOWheel::slotRedTop150(const std::shared_ptr<Player> &player, uint16_t poin
 	} else {
 		bonusData.stats.health += 1 * points;
 	}
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_RED_TOP_150, WheelGemAffinity_t::Red, points);
+
+	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_RED_TOP_150)) {
+		bonusData.leech.manaLeech += 0.25; // 0,25%
+	}
 }
 
 // SLOT_RED_200 = 6
@@ -491,8 +490,10 @@ void IOWheel::slotRed200(const std::shared_ptr<Player> &player, uint16_t points,
 
 // SLOT_GREEN_BOTTOM_150 = 7
 void IOWheel::slotGreenBottom150(const std::shared_ptr<Player> &player, uint16_t points, uint8_t, PlayerWheelMethodsBonusData &bonusData) const {
-	bonusData.mitigation += MITIGATION_INCREASE * points;
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_GREEN_BOTTOM_150, WheelGemAffinity_t::Green, points);
+	bonusData.mitigation += 0.03 * points; // 0,03%
+	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_GREEN_BOTTOM_150)) {
+		bonusData.leech.manaLeech += 0.25; // 0,25%
+	}
 }
 
 // SLOT_GREEN_MIDDLE_100 = 8
@@ -522,9 +523,9 @@ void IOWheel::slotGreenTop75(const std::shared_ptr<Player> &player, uint16_t poi
 	} else {
 		bonusData.stats.mana += 6 * points;
 	}
-	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_GREEN_TOP_100)) {
-		bonusData.leech.lifeLeech += HEALTH_LEECH_INCREASE;
-	}
+	// 1%
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_GREEN_TOP_75, points, COMBAT_HOLYDAMAGE, 100);
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_GREEN_TOP_75, points, COMBAT_DEATHDAMAGE, 100);
 }
 
 // SLOT_RED_TOP_75 = 10
@@ -536,7 +537,8 @@ void IOWheel::slotRedTop75(const std::shared_ptr<Player> &player, uint16_t point
 	} else {
 		bonusData.stats.capacity += 2 * points;
 	}
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_RED_TOP_75, WheelGemAffinity_t::Red, points);
+	// 2%
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_RED_TOP_75, points, COMBAT_ENERGYDAMAGE, 200);
 }
 
 // SLOT_RED_MIDDLE_100 = 11
@@ -566,9 +568,9 @@ void IOWheel::slotRedBottom150(const std::shared_ptr<Player> &player, uint16_t p
 	} else {
 		bonusData.stats.health += 1 * points;
 	}
-	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_RED_TOP_150)) {
-		bonusData.leech.manaLeech += MANA_LEECH_INCREASE;
-	}
+	// 1%
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_RED_BOTTOM_150, points, COMBAT_HOLYDAMAGE, 100);
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_RED_BOTTOM_150, points, COMBAT_DEATHDAMAGE, 100);
 }
 
 // SLOT_GREEN_BOTTOM_100 = 13
@@ -619,12 +621,13 @@ void IOWheel::slotGreen50(const std::shared_ptr<Player> &player, uint16_t points
 	} else {
 		bonusData.stats.capacity += 2 * points;
 	}
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_GREEN_50, WheelGemAffinity_t::Green, points);
+	// 2% of resistance
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_GREEN_50, points, COMBAT_EARTHDAMAGE, 200);
 }
 
 // SLOT_RED_50 = 16
 void IOWheel::slotRed50(const std::shared_ptr<Player> &player, uint16_t points, uint8_t vocationCipId, PlayerWheelMethodsBonusData &bonusData) const {
-	bonusData.mitigation += MITIGATION_INCREASE * points;
+	bonusData.mitigation += 0.03 * points; // 0,03%
 	if (isKnight(vocationCipId)) {
 		addSpell(player, bonusData, WheelSlots_t::SLOT_RED_50, points, "Fierce Berserk");
 	} else if (isPaladin(vocationCipId)) {
@@ -646,7 +649,7 @@ void IOWheel::slotRedBottom75(const std::shared_ptr<Player> &player, uint16_t po
 		bonusData.stats.capacity += 2 * points;
 	}
 	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_RED_BOTTOM_75)) {
-		bonusData.leech.lifeLeech += HEALTH_LEECH_INCREASE;
+		bonusData.leech.lifeLeech += 0.75; // 0,75%
 	}
 }
 
@@ -659,13 +662,14 @@ void IOWheel::slotRedBottom100(const std::shared_ptr<Player> &player, uint16_t p
 	} else {
 		bonusData.stats.mana += 6 * points;
 	}
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_RED_BOTTOM_100, WheelGemAffinity_t::Red, points);
+	// Increase 2% of fire elemental damage resistance
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_RED_BOTTOM_100, points, COMBAT_FIREDAMAGE, 200);
 }
 
 // SLOT_BLUE_TOP_100 = 19
 void IOWheel::slotBlueTop100(const std::shared_ptr<Player> &player, uint16_t points, uint8_t, PlayerWheelMethodsBonusData &bonusData) const {
-	bonusData.mitigation += MITIGATION_INCREASE * points;
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_BLUE_TOP_100, WheelGemAffinity_t::Blue, points);
+	bonusData.mitigation += 0.03 * points; // 0,03%
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_BLUE_TOP_100, points, COMBAT_ENERGYDAMAGE, 200);
 }
 
 // SLOT_BLUE_TOP_75 = 20
@@ -678,7 +682,7 @@ void IOWheel::slotBlueTop75(const std::shared_ptr<Player> &player, uint16_t poin
 		bonusData.stats.health += 1 * points;
 	}
 	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_BLUE_TOP_75)) {
-		bonusData.leech.manaLeech += MANA_LEECH_INCREASE;
+		bonusData.leech.manaLeech += 0.25; // 0,25%
 	}
 }
 
@@ -711,12 +715,13 @@ void IOWheel::slotPurple50(const std::shared_ptr<Player> &player, uint16_t point
 	} else {
 		bonusData.stats.health += 1 * points;
 	}
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_PURPLE_50, WheelGemAffinity_t::Purple, points);
+	// Increase 2% of resistance
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_PURPLE_50, points, COMBAT_ICEDAMAGE, 200);
 }
 
 // SLOT_PURPLE_TOP_75 = 23
 void IOWheel::slotPurpleTop75(const std::shared_ptr<Player> &player, uint16_t points, uint8_t vocationCipId, PlayerWheelMethodsBonusData &bonusData) const {
-	bonusData.mitigation += MITIGATION_INCREASE * points;
+	bonusData.mitigation += 0.03 * points; // 0,03%
 	auto pointsInSlot = isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_PURPLE_TOP_75);
 	if (isKnight(vocationCipId)) {
 		if (pointsInSlot) {
@@ -760,14 +765,15 @@ void IOWheel::slotBlueTop150(const std::shared_ptr<Player> &player, uint16_t poi
 	} else {
 		bonusData.stats.capacity += 2 * points;
 	}
-	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_BLUE_BOTTOM_150)) {
-		bonusData.leech.lifeLeech += HEALTH_LEECH_INCREASE;
-	}
+	// Increase 1% of resistance for holy
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_BLUE_TOP_150, points, COMBAT_HOLYDAMAGE, 100);
+	// Increase 1% of resistance for death
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_BLUE_TOP_150, points, COMBAT_DEATHDAMAGE, 100);
 }
 
 // SLOT_BLUE_MIDDLE_100 = 26
 void IOWheel::slotBlueMiddle100(const std::shared_ptr<Player> &player, uint16_t points, uint8_t vocationCipId, PlayerWheelMethodsBonusData &bonusData) const {
-	bonusData.mitigation += MITIGATION_INCREASE * points;
+	bonusData.mitigation += 0.03 * points; // 0,03%
 	if (isKnight(vocationCipId)) {
 		addSpell(player, bonusData, WheelSlots_t::SLOT_BLUE_MIDDLE_100, points, "Chivalrous Challenge");
 	} else if (isPaladin(vocationCipId)) {
@@ -790,15 +796,15 @@ void IOWheel::slotBlueBottom75(const std::shared_ptr<Player> &player, uint16_t p
 	} else {
 		bonusData.stats.health += 1 * points;
 	}
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_BLUE_BOTTOM_75, WheelGemAffinity_t::Blue, points);
+	// Increase 2% resistance of fire damage
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_BLUE_BOTTOM_75, points, COMBAT_FIREDAMAGE, 200);
 }
 
 // SLOT_PURPLE_BOTTOM_75 = 28
 void IOWheel::slotPurpleBottom75(const std::shared_ptr<Player> &player, uint16_t points, uint8_t, PlayerWheelMethodsBonusData &bonusData) const {
-	bonusData.mitigation += MITIGATION_INCREASE * points;
-	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_PURPLE_BOTTOM_100)) {
-		bonusData.leech.manaLeech += MANA_LEECH_INCREASE;
-	}
+	bonusData.mitigation += 0.03 * points; // 0,03%
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_PURPLE_BOTTOM_75, points, COMBAT_HOLYDAMAGE, 100);
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_PURPLE_BOTTOM_75, points, COMBAT_DEATHDAMAGE, 100);
 }
 
 // SLOT_PURPLE_MIDDLE_100 = 29
@@ -828,7 +834,9 @@ void IOWheel::slotPurpleTop150(const std::shared_ptr<Player> &player, uint16_t p
 	} else {
 		bonusData.stats.mana += 6 * points;
 	}
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_PURPLE_TOP_150, WheelGemAffinity_t::Purple, points);
+	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_PURPLE_TOP_150)) {
+		bonusData.leech.lifeLeech += 0.75; // 0,75%
+	}
 }
 
 // SLOT_BLUE_200 = 31
@@ -861,12 +869,14 @@ void IOWheel::slotBlueBottom150(const std::shared_ptr<Player> &player, uint16_t 
 	} else {
 		bonusData.stats.capacity += 2 * points;
 	}
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_BLUE_BOTTOM_150, WheelGemAffinity_t::Blue, points);
+	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_BLUE_BOTTOM_150)) {
+		bonusData.leech.lifeLeech += 0.75; // 0,75%
+	}
 }
 
 // SLOT_BLUE_BOTTOM_100 = 33
 void IOWheel::slotBlueBottom100(const std::shared_ptr<Player> &player, uint16_t points, uint8_t vocationCipId, PlayerWheelMethodsBonusData &bonusData) const {
-	bonusData.mitigation += MITIGATION_INCREASE * points;
+	bonusData.mitigation += 0.03 * points; // 0,03%
 	bool onSlot = isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_BLUE_BOTTOM_100);
 	if (isKnight(vocationCipId) && onSlot) {
 		bonusData.skills.melee += 1;
@@ -886,7 +896,9 @@ void IOWheel::slotPurpleBottom100(const std::shared_ptr<Player> &player, uint16_
 	} else {
 		bonusData.stats.capacity += 2 * points;
 	}
-	addVesselResonance(player, bonusData, WheelSlots_t::SLOT_PURPLE_BOTTOM_100, WheelGemAffinity_t::Purple, points);
+	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_PURPLE_BOTTOM_100)) {
+		bonusData.leech.manaLeech += 0.25; // 0,25%
+	}
 }
 
 // SLOT_PURPLE_BOTTOM_150 = 35
@@ -898,9 +910,8 @@ void IOWheel::slotPurpleBottom150(const std::shared_ptr<Player> &player, uint16_
 	} else {
 		bonusData.stats.mana += 6 * points;
 	}
-	if (isMaxPointAddedToSlot(player, points, WheelSlots_t::SLOT_PURPLE_TOP_150)) {
-		bonusData.leech.lifeLeech += HEALTH_LEECH_INCREASE;
-	}
+	// Increase 2% of earth resistance
+	increaseResistance(player, bonusData, WheelSlots_t::SLOT_PURPLE_BOTTOM_150, points, COMBAT_EARTHDAMAGE, 200);
 }
 
 // SLOT_PURPLE_200 = 36

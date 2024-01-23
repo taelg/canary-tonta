@@ -15,7 +15,6 @@
 #include "creatures/players/player.hpp"
 #include "game/game.hpp"
 #include "utils/tools.hpp"
-#include "items/item.hpp"
 
 void IOBosstiary::loadBoostedBoss() {
 	Database &database = Database::getInstance();

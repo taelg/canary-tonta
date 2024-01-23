@@ -37,11 +37,6 @@ void Metrics::init(Options opts) {
 		p->AddMetricReader(std::move(prometheusExporter));
 	}
 
-	metrics_api::Provider::SetMeterProvider(std::move(provider));
-	initHistograms();
-}
-
-void Metrics ::initHistograms() {
 	for (auto name : latencyNames) {
 		auto instrumentSelector = metrics_sdk::InstrumentSelectorFactory::Create(metrics_sdk::InstrumentType::kHistogram, name, "us");
 		auto meterSelector = metrics_sdk::MeterSelectorFactory::Create("performance", otelVersion, otelSchema);
@@ -73,12 +68,12 @@ void Metrics ::initHistograms() {
 		// clang-format on
 
 		auto view = metrics_sdk::ViewFactory::Create(name, "Latency", "us", metrics_sdk::AggregationType::kHistogram, std::move(aggregationConfig));
-		auto provider = metrics_api::Provider::GetMeterProvider();
-		auto* p = static_cast<metrics_sdk::MeterProvider*>(provider.get());
 		p->AddView(std::move(instrumentSelector), std::move(meterSelector), std::move(view));
 
 		latencyHistograms[name] = getMeter()->CreateDoubleHistogram(name, "Latency", "us");
 	}
+
+	metrics_api::Provider::SetMeterProvider(std::move(provider));
 }
 
 void Metrics::shutdown() {

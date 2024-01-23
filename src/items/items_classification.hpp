@@ -10,10 +10,8 @@
 #pragma once
 
 struct TierInfo {
-	uint8_t corePrice = 0;
-	uint64_t regularPrice = 0;
-	uint64_t convergenceFusionPrice = 0;
-	uint64_t convergenceTransferPrice = 0;
+	uint64_t priceToUpgrade = 0;
+	uint8_t corePriceToFuse = 0;
 };
 
 // Classification class for forging system and market.
@@ -24,12 +22,10 @@ public:
 		id(id) { }
 	virtual ~ItemClassification() = default;
 
-	void addTier(uint8_t tierId, uint8_t corePrice, uint64_t regularPrice, uint64_t convergenceFusionPrice, uint64_t convergenceTransferPrice) {
+	void addTier(uint8_t tierId, uint64_t tierPrice, uint8_t corePrice) {
 		auto &table = tiers[tierId];
-		table.corePrice = corePrice;
-		table.regularPrice = regularPrice;
-		table.convergenceFusionPrice = convergenceFusionPrice;
-		table.convergenceTransferPrice = convergenceTransferPrice;
+		table.priceToUpgrade = tierPrice;
+		table.corePriceToFuse = corePrice;
 	}
 
 	uint8_t id;

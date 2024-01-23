@@ -113,9 +113,6 @@ lionsGetHolyWater:register()
 local lionsRockFountain = Action()
 
 function lionsRockFountain.onUse(player, item, fromPosition, target, toPosition, isHotkey)
-	if item:getId() ~= 6389 then
-		return false
-	end
 	if player:getStorageValue(Storage.LionsRock.Time) < os.time() then
 		local reward = ""
 		if player:hasMount(40) then
@@ -125,8 +122,7 @@ function lionsRockFountain.onUse(player, item, fromPosition, target, toPosition,
 		else
 			reward = math.random(1, #rewards)
 		end
-		local iType = ItemType(rewards[reward])
-		player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "Something sparkles in the fountain's water. You draw out " .. iType:getArticle() .. " " .. iType:getName() .. ".")
+		player:sendTextMessage(MESSAGE_EVENT_ADVANCE, "Something sparkles in the fountain's water. You draw out a " .. rewards[reward] .. ".")
 		player:getPosition():sendMagicEffect(CONST_ME_HOLYAREA)
 		player:addAchievement("Lion's Den Explorer")
 		item:transform(lionsRockSanctuaryRockId)
@@ -139,5 +135,5 @@ function lionsRockFountain.onUse(player, item, fromPosition, target, toPosition,
 	return true
 end
 
-lionsRockFountain:position({ x = 33073, y = 32300, z = 9 })
+lionsRockFountain:id(6389)
 lionsRockFountain:register()

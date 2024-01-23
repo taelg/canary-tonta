@@ -100,7 +100,16 @@ function Hazard:setPlayerCurrentLevel(player, level)
 	if not zones then
 		return true
 	end
-	player:updateHazard()
+	for _, zone in ipairs(zones) do
+		local hazard = Hazard.getByName(zone:getName())
+		if hazard then
+			if hazard == self then
+				player:setHazardSystemPoints(level)
+			else
+				player:setHazardSystemPoints(0)
+			end
+		end
+	end
 	return true
 end
 

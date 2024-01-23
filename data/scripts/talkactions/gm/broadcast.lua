@@ -1,15 +1,5 @@
 local broadcast = TalkAction("/b")
 
-function Broadcast(text, filter)
-	for _, targetPlayer in ipairs(Game.getPlayers()) do
-		if filter and not filter(targetPlayer) then
-			goto continue
-		end
-		targetPlayer:sendTextMessage(MESSAGE_ADMINISTRADOR, text)
-		::continue::
-	end
-end
-
 function broadcast.onSay(player, words, param)
 	-- create log
 	logCommand(player, words, param)
@@ -21,7 +11,10 @@ function broadcast.onSay(player, words, param)
 
 	local text = player:getName() .. " broadcasted: " .. param
 	logger.info(text)
-	Broadcast(param)
+	Webhook.sendMessage("Broadcast", text, WEBHOOK_COLOR_WARNING, announcementChannels["serverAnnouncements"])
+	for _, targetPlayer in ipairs(Game.getPlayers()) do
+		targetPlayer:sendPrivateMessage(player, param, TALKTYPE_BROADCAST)
+	end
 	return true
 end
 

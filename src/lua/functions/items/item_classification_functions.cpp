@@ -28,16 +28,10 @@ int ItemClassificationFunctions::luaItemClassificationCreate(lua_State* L) {
 }
 
 int ItemClassificationFunctions::luaItemClassificationAddTier(lua_State* L) {
-	// itemClassification:addTier(id, core, regularPrice, convergenceFusionPrice, convergenceTransferPrice)
+	// itemClassification:addTier(id, gold[, core = 0])
 	ItemClassification* itemClassification = getUserdata<ItemClassification>(L, 1);
 	if (itemClassification) {
-		itemClassification->addTier(
-			getNumber<uint8_t>(L, 2),
-			getNumber<uint8_t>(L, 3),
-			getNumber<uint64_t>(L, 4),
-			getNumber<uint64_t>(L, 5),
-			getNumber<uint64_t>(L, 6)
-		);
+		itemClassification->addTier(getNumber<uint8_t>(L, 2), getNumber<uint64_t>(L, 3), getNumber<uint8_t>(L, 4, 0));
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);

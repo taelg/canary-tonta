@@ -336,15 +336,12 @@ public:
 
 	float getAttackMultiplier() const {
 		float multiplier = mType->getAttackMultiplier();
-		if (auto stacks = getForgeStack(); stacks > 0) {
-			multiplier *= (1.35 + (stacks - 1) * 0.1);
-		}
-		return multiplier;
+		return multiplier * std::pow(1.03f, getForgeStack());
 	}
 
 	float getDefenseMultiplier() const {
 		float multiplier = mType->getDefenseMultiplier();
-		return multiplier * std::pow(1.02f, getForgeStack());
+		return multiplier * std::pow(1.01f, getForgeStack());
 	}
 
 private:

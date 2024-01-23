@@ -380,21 +380,6 @@ public:
 		return items[id].abilities->specializedMagicLevel[combatTypeToIndex(combat)];
 	}
 
-	int32_t getSpeed() const {
-		int32_t value = items[id].abilities->speed;
-		return value;
-	}
-
-	int32_t getSkill(skills_t skill) const {
-		int32_t value = items[id].abilities ? items[id].abilities->skills[skill] : 0;
-		return value;
-	}
-
-	int32_t getStat(stats_t stat) const {
-		int32_t value = items[id].abilities ? items[id].abilities->stats[stat] : 0;
-		return value;
-	}
-
 	int32_t getAttack() const {
 		if (hasAttribute(ItemAttribute_t::ATTACK)) {
 			return getAttribute<int32_t>(ItemAttribute_t::ATTACK);
@@ -486,12 +471,6 @@ public:
 	bool isWrapable() const {
 		return items[id].wrapable && items[id].wrapableTo;
 	}
-	bool isRing() const {
-		return items[id].isRing();
-	}
-	bool isAmulet() const {
-		return items[id].isAmulet();
-	}
 	bool isAmmo() const {
 		return items[id].isAmmo();
 	}
@@ -500,12 +479,6 @@ public:
 	}
 	bool isQuiver() const {
 		return items[id].isQuiver();
-	}
-	bool isShield() const {
-		return items[id].isShield();
-	}
-	bool isWand() const {
-		return items[id].isWand();
 	}
 	bool isSpellBook() const {
 		return items[id].isSpellBook();
@@ -681,52 +654,25 @@ public:
 		return false;
 	}
 
-	double getDodgeChance() const {
+	double_t getDodgeChance() const {
 		if (getTier() == 0) {
 			return 0;
 		}
-		return quadraticPoly(
-			g_configManager().getFloat(RUSE_CHANCE_FORMULA_A, __FUNCTION__),
-			g_configManager().getFloat(RUSE_CHANCE_FORMULA_B, __FUNCTION__),
-			g_configManager().getFloat(RUSE_CHANCE_FORMULA_C, __FUNCTION__),
-			getTier()
-		);
+		return (0.0307576 * getTier() * getTier()) + (0.440697 * getTier()) + 0.026;
 	}
 
-	double getFatalChance() const {
+	double_t getFatalChance() const {
 		if (getTier() == 0) {
 			return 0;
 		}
-		return quadraticPoly(
-			g_configManager().getFloat(ONSLAUGHT_CHANCE_FORMULA_A, __FUNCTION__),
-			g_configManager().getFloat(ONSLAUGHT_CHANCE_FORMULA_B, __FUNCTION__),
-			g_configManager().getFloat(ONSLAUGHT_CHANCE_FORMULA_C, __FUNCTION__),
-			getTier()
-		);
+		return 0.5 * getTier() + 0.05 * ((getTier() - 1) * (getTier() - 1));
 	}
 
-	double getMomentumChance() const {
+	double_t getMomentumChance() const {
 		if (getTier() == 0) {
 			return 0;
 		}
-		return quadraticPoly(
-			g_configManager().getFloat(MOMENTUM_CHANCE_FORMULA_A, __FUNCTION__),
-			g_configManager().getFloat(MOMENTUM_CHANCE_FORMULA_B, __FUNCTION__),
-			g_configManager().getFloat(MOMENTUM_CHANCE_FORMULA_C, __FUNCTION__),
-			getTier()
-		);
-	}
-
-	double getTranscendenceChance() const {
-		if (getTier() == 0) {
-			return 0;
-		}
-		return quadraticPoly(
-			g_configManager().getFloat(TRANSCENDANCE_CHANCE_FORMULA_A, __FUNCTION__),
-			g_configManager().getFloat(TRANSCENDANCE_CHANCE_FORMULA_B, __FUNCTION__),
-			g_configManager().getFloat(TRANSCENDANCE_CHANCE_FORMULA_C, __FUNCTION__),
-			getTier()
-		);
+		return 2 * getTier() + 0.05 * ((getTier() - 1) * (getTier() - 1));
 	}
 
 	uint8_t getTier() const {

@@ -12,7 +12,6 @@
 #include "server/network/protocol/protocol.hpp"
 #include "creatures/interactions/chat.hpp"
 #include "creatures/creature.hpp"
-#include "enums/forge_conversion.hpp"
 
 class NetworkMessage;
 class Player;
@@ -256,10 +255,9 @@ private:
 		uint8_t tier,
 		bool success,
 		uint8_t bonus,
-		uint8_t coreCount,
-		bool convergence
+		uint8_t coreCount
 	);
-	void sendForgeResult(ForgeAction_t actionType, uint16_t leftItemId, uint8_t leftTier, uint16_t rightItemId, uint8_t rightTier, bool success, uint8_t bonus, uint8_t coreCount, bool convergence);
+	void sendTransferItemTier(uint16_t firstItem, uint8_t tier, uint16_t secondItem);
 	void sendForgeHistory(uint8_t page);
 	void sendForgeSkillStats(NetworkMessage &msg) const;
 
@@ -469,7 +467,6 @@ private:
 	void parseOpenWheel(NetworkMessage &msg);
 	void sendOpenWheelWindow(uint32_t ownerId);
 	void parseSaveWheel(NetworkMessage &msg);
-	void parseWheelGemAction(NetworkMessage &msg);
 
 	friend class Player;
 	friend class PlayerWheel;
